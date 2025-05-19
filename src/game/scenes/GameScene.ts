@@ -23,7 +23,6 @@ export class GameScene extends Scene {
 
     this.setDefaults();
   
-    this.pipeGroup = this.physics.add.group();
     this.scoreText = this.add.text(10, 10, "-", {
       fontSize: "16px",
       color: "#fff",
@@ -32,11 +31,10 @@ export class GameScene extends Scene {
 
     this.updateScore();
 
-    this.cameras.main.setBackgroundColor("#87CEEB");
+    this.pipeGroup = this.physics.add.group();
 
     this.bird = this.physics.add.sprite(80, 240, "bird-yellow");
     this.bird.setOrigin(0.5);
-    this.bird.setGravityY(800);
 
     this.input.on("pointerdown", this.flipBird, this);
 
@@ -53,20 +51,22 @@ export class GameScene extends Scene {
   }
 
   update(): void {
-    if (this.bird.y > this.scale.height) {
-      this.die();
-    }
+    // if (this.bird.y > this.scale.height) {
+    //   this.die();
+    // }
   }
-
   private addPipe() {
-    const pipeHolePosition = Phaser.Math.Between(50, 430 - this.pipeHole);
+    const pipeHolePosition = Phaser.Math.Between(50, 430-this.pipeHole);
 
-    const upperPipe = this.physics.add.sprite(150, pipeHolePosition - HEIGHT, "pipe-red-bottom");
-    upperPipe.setVelocityX(-this.birdSpeed);
+    const upperPipe = this.physics.add.sprite(250, pipeHolePosition - HEIGHT, "pipe-red-top");
+    upperPipe.setVelocityY(-this.birdSpeed);
+    upperPipe.setData("giveScore", false);
     this.pipeGroup.add(upperPipe);
 
-    const lowerPipe = this.physics.add.sprite(150, pipeHolePosition + this.pipeHole, "pipe-red-top");
-    lowerPipe.setVelocityX(-this.birdSpeed);
+
+    const lowerPipe = this.physics.add.sprite(250, pipeHolePosition + this.pipeHole, "pipe-red-bottom");
+    lowerPipe.setVelocityY(-this.birdSpeed);
+    lowerPipe.setData("giveScore", true);
     this.pipeGroup.add(lowerPipe);
   }
 
