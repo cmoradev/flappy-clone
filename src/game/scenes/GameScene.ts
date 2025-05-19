@@ -6,9 +6,8 @@ export class GameScene extends Scene {
 
   private bird!: Physics.Arcade.Sprite;
   private pipes!: Physics.Arcade.Group;
+  private zones!: Physics.Arcade.Group;
   private scoreText!: GameObjects.Text;
-
-  cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
 
   private readonly pipeHole = 150;
   private readonly pipeInterval = 2000;
@@ -35,6 +34,11 @@ export class GameScene extends Scene {
     this.pipes = this.physics.add.group({
       immovable: true,
       allowGravity: false,
+    });
+
+    this.zones = this.physics.add.group({
+      allowGravity: false,
+      immovable: true,
     });
 
     this.scoreText = this.add.text(10, 10, "-", {
