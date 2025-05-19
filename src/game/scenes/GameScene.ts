@@ -1,42 +1,50 @@
 import { Scene, Physics, GameObjects } from "phaser";
-import { HEIGHT } from "../config";
 
 export class GameScene extends Scene {
-  private score = 0;
   private topScore = 0;
+  private score = 0;
 
-  private pipeGroup: Physics.Arcade.Group;
-  private scoreText: GameObjects.Text;
-  private bird: Physics.Arcade.Sprite;
+  private bird!: Physics.Arcade.Sprite;
+  private pipes!: Physics.Arcade.Group;
+  private scoreText!: GameObjects.Text;
 
-  private readonly birdFlapPower = 300;
+  cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
+
+  private readonly pipeHole = 150;
   private readonly pipeInterval = 2000;
-  private readonly pipeHole = 120;
-  private readonly birdSpeed = 125;
+  private readonly birdFlapPower = 350;
+  private readonly speed = 200;
 
   constructor() {
-    super({ key: "GameScene" });
+    super("GameScene");
+  }
+
+  preload() {
+    this.load.image("bird", "assets/bird.png");
+    this.load.image("pipe", "assets/pipe.png");
+    this.load.image("background", "assets/background.png");
   }
 
   create() {
     this.add.image(0, 0, "background-night").setOrigin(0, 0);
 
-    this.setDefaults();
-  
+    this.bird = this.physics.add
+      .sprite(80, 240, "bird-yellow")
+      .setOrigin(0.5, 0.5);
+
+    this.pipes = this.physics.add.group({
+      immovable: true,
+      allowGravity: false,
+    });
+
     this.scoreText = this.add.text(10, 10, "-", {
       fontSize: "16px",
       color: "#fff",
-      align: "left",
     });
 
+    this.setDefaults();
+
     this.updateScore();
-
-    this.pipeGroup = this.physics.add.group();
-
-    this.bird = this.physics.add.sprite(80, 240, "bird-yellow");
-    this.bird.setOrigin(0.5);
-
-    this.input.on("pointerdown", this.flipBird, this);
 
     this.time.addEvent({
       delay: this.pipeInterval,
@@ -45,29 +53,25 @@ export class GameScene extends Scene {
       loop: true,
     });
 
-    this.addPipe();
+    this.input.keyboard?.on("keydown-SPACE", this.flap, this);
+    this.input.on("pointerdown", this.flap, this);
 
-    this.physics.add.collider(this.bird, this.pipeGroup, this.die, undefined, this);
+    this.physics.add.collider(this.bird, this.pipes, this.die, undefined, this);
   }
 
-  update(): void {
-    // if (this.bird.y > this.scale.height) {
-    //   this.die();
-    // }
+  update() {
+    if (this.bird.y > this.scale.height) {
+      this.die();
+    }
+
+    if (this.bird.angle < 20) {
+      this.bird.angle += 2;
+    }
   }
-  private addPipe() {
-    const pipeHolePosition = Phaser.Math.Between(50, 430-this.pipeHole);
 
-    const upperPipe = this.physics.add.sprite(250, pipeHolePosition - HEIGHT, "pipe-red-top");
-    upperPipe.setVelocityY(-this.birdSpeed);
-    upperPipe.setData("giveScore", false);
-    this.pipeGroup.add(upperPipe);
-
-
-    const lowerPipe = this.physics.add.sprite(250, pipeHolePosition + this.pipeHole, "pipe-red-bottom");
-    lowerPipe.setVelocityY(-this.birdSpeed);
-    lowerPipe.setData("giveScore", true);
-    this.pipeGroup.add(lowerPipe);
+  private flap() {
+    this.bird.setVelocityY(-this.birdFlapPower);
+    this.bird.setAngle(-40);
   }
 
   private die() {
@@ -80,9 +84,21 @@ export class GameScene extends Scene {
     });
   }
 
-  private flipBird() {
-    this.bird.setVelocityY(-this.birdFlapPower);
-    this.bird.setAngle(-20);
+  private addPipe() {
+    const pipeHolePosition = Phaser.Math.Between(50, 430 - this.pipeHole);
+
+    // Tubería superior
+    const topPipe = this.pipes.create(550, pipeHolePosition, "pipe-red-top");
+    topPipe.setData("giveScore", true);
+    topPipe.setOrigin(0.5, 1);
+
+    // Tubería inferior
+    const bottomPipe = this.pipes.create(550,pipeHolePosition + this.pipeHole, "pipe-red-bottom"); 
+    bottomPipe.setData("giveScore", true);
+    bottomPipe.setOrigin(0.5, 0);
+
+    // Mover ambos
+    this.pipes.setVelocityX(-this.speed);
   }
 
   private updateScore() {
