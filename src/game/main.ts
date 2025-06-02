@@ -18,9 +18,16 @@ const config: Types.Core.GameConfig = {
     mode: Scale.FIT,
     autoCenter: Scale.CENTER_BOTH,
   },
+  physics: {
+    default: 'arcade',
+    arcade: {
+      debug: false,
+      gravity: { x: 0, y: 1000 }
+    }
+  },
   scene: [
-    MenuScene,
     PreloadScene,
+    MenuScene,
     GameOverScene,
     GameScene,
     ScoreScene,
